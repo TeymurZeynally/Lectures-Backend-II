@@ -1,4 +1,5 @@
 using Lecture01.Sync.GraphQL.CatsService.Api.Cats.GraphQL;
+using Lecture01.Sync.GraphQL.CatsService.Api.Cats.Services;
 using Lecture01.Sync.GraphQL.CatsService.DataAccess;
 using Microsoft.EntityFrameworkCore;
 
@@ -6,6 +7,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<CatsDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")));
+
+builder.Services.AddScoped<ICatsService, CatsService>();
 
 builder.Services
     .AddGraphQLServer()
