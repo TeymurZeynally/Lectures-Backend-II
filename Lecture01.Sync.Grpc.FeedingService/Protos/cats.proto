@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+option csharp_namespace = "Lecture01.Sync.Grpc.CatsService.Grpc";
+
+package cats;
+
+service CatsGrpcService {
+  rpc CreateCat (CreateCatRequest) returns (CatMessage);
+  rpc GetCat (GetCatRequest) returns (CatMessage);
+  rpc ListCats (ListCatsRequest) returns (ListCatsResponse);
+  rpc UpdateCat (UpdateCatRequest) returns (CatMessage);
+  rpc DeleteCat (DeleteCatRequest) returns (DeleteCatResponse);
+}
+
+message CatMessage {
+  string id = 1;
+  string name = 2;
+  string breed = 3;
+  int32 age_months = 4;
+  double weight_kg = 5;
+  bool is_vaccinated = 6;
+}
+
+message CreateCatRequest {
+  string name = 1;
+  string breed = 2;
+  int32 age_months = 3;
+  double weight_kg = 4;
+  bool is_vaccinated = 5;
+}
+
+message GetCatRequest {
+  string id = 1;
+}
+
+message ListCatsRequest {
+}
+
+message ListCatsResponse {
+  repeated CatMessage cats = 1;
+}
+
+message UpdateCatRequest {
+  string id = 1;
+  string name = 2;
+  string breed = 3;
+  int32 age_months = 4;
+  double weight_kg = 5;
+  bool is_vaccinated = 6;
+}
+
+message DeleteCatRequest {
+  string id = 1;
+}
+
+message DeleteCatResponse {
+  bool success = 1;
+}

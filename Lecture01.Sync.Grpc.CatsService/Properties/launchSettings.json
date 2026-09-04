@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "Lecture01.Sync.Grpc.CatsService": {
+      "commandName": "Project",
+      "applicationUrl": "http://localhost:5081",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

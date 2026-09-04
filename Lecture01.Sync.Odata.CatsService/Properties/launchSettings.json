@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "Lecture01.Sync.Odata.CatsService": {
+      "commandName": "Project",
+      "applicationUrl": "http://localhost:5082",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

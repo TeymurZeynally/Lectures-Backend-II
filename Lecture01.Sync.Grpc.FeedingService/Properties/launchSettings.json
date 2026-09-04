@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "Lecture01.Sync.Grpc.FeedingService": {
+      "commandName": "Project",
+      "applicationUrl": "http://localhost:5091",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}
