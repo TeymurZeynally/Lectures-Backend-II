@@ -15,7 +15,7 @@ service to see how a consumer group shares the work.
   same `GroupId` joins one group. Kafka splits the 6 partitions between
   however many instances are alive, and rebalances live as you add or stop
   them. Each instance logs `assigned partitions [...]` when this happens.
-- **Backlog / throughput** — `ProcessingDelayMs` simulates per-message work.
+- **Backlog / throughput** — `DelayMs` simulates per-message work.
   With one consumer it can't keep up with the producer and falls behind
   (watch the consumer lag grow in Kafka UI); start more consumer instances
   and the backlog drains faster because the partitions get split between
@@ -48,7 +48,7 @@ Override settings via command-line args (they override `appsettings.json`):
 
 ```bash
 # publish much faster, to build up a visible backlog
-dotnet run -- --Kafka:MessagesPerSecond=2000
+dotnet run -- --Processing:MessagesPerSecond=2000
 ```
 
 ## 3. Run one or more Consumers
@@ -82,7 +82,7 @@ Other useful overrides:
 
 ```bash
 # simulate slower per-message processing, to make a single consumer fall behind
-dotnet run -- --Kafka:ProcessingDelayMs=300
+dotnet run -- --Processing:DelayMs=300
 
 # start a second, independent group that reads the whole topic on its own
 dotnet run -- --Kafka:GroupId=analytics --Kafka:ClientId=analytics-1

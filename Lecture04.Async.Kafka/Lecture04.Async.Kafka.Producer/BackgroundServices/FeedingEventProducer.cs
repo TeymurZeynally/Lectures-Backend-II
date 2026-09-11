@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text;
 using System.Text.Json;
 using Confluent.Kafka;
 using Lecture04.Async.Kafka.Contracts;
@@ -11,7 +12,7 @@ namespace Lecture04.Async.Kafka.Producer.BackgroundServices;
 
 public sealed class FeedingEventProducer(
     IProducer<string, string> producer,
-    IOptions<ProducerOptions> options,
+    IOptions<ProcessingOptions> options,
     ILogger<FeedingEventProducer> logger) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -27,6 +28,10 @@ public sealed class FeedingEventProducer(
         while (!stoppingToken.IsCancellationRequested)
         {
             var stopwatch = Stopwatch.StartNew();
+            var batchId = Guid.NewGuid().ToString("N")[..6].ToUpperInvariant();
+            var batchIdBytes = Encoding.UTF8.GetBytes(batchId);
+
+            logger.LogInformation("Publishing batch {BatchId} ({Count} messages)", batchId, settings.MessagesPerSecond);
 
             for (var i = 0; i < settings.MessagesPerSecond; i++)
             {
@@ -37,7 +42,8 @@ public sealed class FeedingEventProducer(
                 var message = new Message<string, string>
                 {
                     Key = catId.ToString(),
-                    Value = JsonSerializer.Serialize(feedingEvent)
+                    Value = JsonSerializer.Serialize(feedingEvent),
+                    Headers = new Headers { { "BatchId", batchIdBytes } }
                 };
 
                 producer.Produce(settings.Topic, message, report =>
@@ -52,7 +58,7 @@ public sealed class FeedingEventProducer(
             }
 
             producer.Poll(TimeSpan.Zero);
-            logger.LogInformation("Published {Sequence} messages so far", sequenceNumber);
+            logger.LogInformation("Published {Sequence} messages so far (batch {BatchId})", sequenceNumber, batchId);
 
             var remaining = TimeSpan.FromSeconds(1) - stopwatch.Elapsed;
             if (remaining > TimeSpan.Zero)

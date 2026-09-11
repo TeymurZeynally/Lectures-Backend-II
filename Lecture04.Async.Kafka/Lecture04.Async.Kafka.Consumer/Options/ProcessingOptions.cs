@@ -1,7 +1,8 @@
 namespace Lecture04.Async.Kafka.Consumer.Options;
 
-public sealed class ConsumerOptions
+public sealed class ProcessingOptions
 {
     public string Topic { get; init; } = "cat-feedings";
-    public int ProcessingDelayMs { get; init; } = 100;
+    
+    public int DelayMs { get; init; } = 100;
 }
