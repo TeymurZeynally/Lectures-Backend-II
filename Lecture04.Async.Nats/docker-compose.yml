@@ -1,0 +1,16 @@
+services:
+  nats:
+    image: nats:2-alpine
+    container_name: lecture04-nats
+    command: ["-js", "-m", "8222"]
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+
+  nats-ui:
+    image: ghcr.io/nats-nui/nui:latest
+    container_name: lecture04-nats-ui
+    depends_on:
+      - nats
+    ports:
+      - "31311:31311"
