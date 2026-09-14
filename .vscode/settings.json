@@ -1,11 +1,6 @@
 {
   "files.exclude": {
     "**/bin": true,
-    "**/obj": true,
-    "**Lecture01.**": true,
-    "**Lecture02.**": true,
-    "**Lecture04.**.Kafka**": true,
-    "**Lecture04.**.Nats**": true,
-    "**Lecture04.**.RabbitMq**": true,
+    "**/obj": true
   }
 }
