@@ -1,98 +1,104 @@
-# Lecture 04 — RabbitMQ
+# Лекция 04 — RabbitMQ
 
-A minimal RabbitMQ example: one **Producer** that floods a queue with "cat
-fed" events, and a **Consumer** that you run as one or more instances to see
-how RabbitMQ shares the work between them.
+Минимальный пример на RabbitMQ: один **Producer**, который заливает очередь
+событиями "кота покормили", и **Consumer**, который можно запускать в
+нескольких экземплярах, чтобы увидеть, как RabbitMQ делит между ними
+работу.
 
-## Concepts shown
+## Концепции
 
-- **Exchange, routing key, queue** — the producer publishes to a `direct`
-  exchange (`cat-feedings-exchange`) with routing key `feeding`; the queue
-  `cat-feedings` is bound to that exchange with the same routing key. Both
-  services declare this topology on startup, so it exists no matter which
-  one you start first.
-- **Competing consumers** — every Consumer instance you start subscribes to
-  the *same* queue. Unlike Kafka, there's no partitioning to think about:
-  RabbitMQ just dispatches each message to one of the connected consumers.
-- **Prefetch / fair dispatch** — `PrefetchCount` (QoS) caps how many
-  unacknowledged messages a consumer can hold at once. With the default of
-  1, RabbitMQ won't hand a consumer a new message until it has acknowledged
-  the previous one, so a busy consumer stops getting new work and it
-  naturally spreads to whichever consumer is free. Raise it and you'll see
-  dispatch become blind round-robin instead of load-based.
-- **Manual ack** — the consumer acks each message only after "processing"
-  it (`DelayMs`). If a consumer is killed before acking, RabbitMQ
-  redelivers that message to another consumer instead of losing it.
+- **Exchange, routing key, очередь** — producer публикует в `direct`
+  exchange (`cat-feedings-exchange`) с routing key `feeding`; очередь
+  `cat-feedings` привязана к этому exchange с тем же routing key. Оба
+  сервиса объявляют эту топологию при старте, так что она появится
+  независимо от того, кто запустился первым.
+- **Конкурирующие потребители** — каждый запущенный экземпляр Consumer
+  подписывается на *одну и ту же* очередь. В отличие от Kafka, здесь не
+  нужно думать о партиционировании: RabbitMQ просто раздаёт каждое
+  сообщение одному из подключённых consumer'ов.
+- **Prefetch / честная диспетчеризация** — `PrefetchCount` (QoS) ограничивает,
+  сколько неподтверждённых сообщений может удерживать consumer одновременно.
+  При значении по умолчанию (1) RabbitMQ не отдаёт consumer'у новое
+  сообщение, пока тот не подтвердит предыдущее, поэтому занятый consumer
+  перестаёт получать новую работу, и она естественным образом перетекает к
+  свободному. Увеличьте это значение — и диспетчеризация превратится в
+  слепой round-robin вместо распределения по загрузке.
+- **Ручной ack** — consumer подтверждает каждое сообщение только после его
+  "обработки" (`DelayMs`). Если consumer будет убит до подтверждения,
+  RabbitMQ доставит это сообщение другому consumer'у вместо того, чтобы его
+  потерять.
 
-## 1. Start the broker
+## 1. Запуск брокера
 
 ```bash
 docker compose up -d
 ```
 
-This starts **RabbitMQ** with the management plugin built in:
-- AMQP on `localhost:5672`
-- Management UI on [http://localhost:15672](http://localhost:15672)
-  (login `guest` / `guest`) — browse exchanges, queues, bindings and message
-  rates from the browser
+Поднимается **RabbitMQ** со встроенным management-плагином:
+- AMQP на `localhost:5672`
+- Management UI на [http://localhost:15672](http://localhost:15672)
+  (логин `guest` / `guest`) — можно смотреть exchange'и, очереди, привязки
+  и частоту сообщений прямо в браузере
 
-Everything works out of the box, no manual setup required.
+Всё работает из коробки, никакой ручной настройки не требуется.
 
-## 2. Run the Producer
+## 2. Запуск Producer
 
 ```bash
 cd Lecture04.Async.RabbitMq.Producer
 dotnet run
 ```
 
-Publishes to `cat-feedings-exchange` at `MessagesPerSecond` (default 50)
-forever. Declares the exchange, queue and binding on startup.
+Публикует в `cat-feedings-exchange` со скоростью `MessagesPerSecond` (по
+умолчанию 50) без остановки. При старте объявляет exchange, очередь и
+привязку.
 
-Override settings via command-line args (they override `appsettings.json`):
+Настройки можно переопределить через аргументы командной строки (они
+переопределяют `appsettings.json`):
 
 ```bash
-# publish much faster, to build up a visible backlog
+# публиковать намного быстрее, чтобы накопить заметный backlog
 dotnet run -- --Processing:MessagesPerSecond=2000
 ```
 
-## 3. Run one or more Consumers
+## 3. Запуск одного или нескольких Consumer
 
-Each terminal below is a separate **consumer instance** reading from the
-same queue. Give each one a distinct `ConsumerTag` so you can tell them
-apart in the logs:
+Каждый терминал ниже — отдельный **экземпляр consumer'а**, читающий из
+одной и той же очереди. Дайте каждому свой `ConsumerTag`, чтобы различать
+их в логах:
 
 ```bash
 cd Lecture04.Async.RabbitMq.Consumer
 dotnet run -- --Processing:ConsumerTag=consumer-1
 ```
 
-Open more terminals for more instances:
+Открывайте больше терминалов для новых экземпляров:
 
 ```bash
 dotnet run -- --Processing:ConsumerTag=consumer-2
 dotnet run -- --Processing:ConsumerTag=consumer-3
 ```
 
-With one consumer and a non-trivial `DelayMs`, it can't keep up
-with the producer and falls behind (watch the queue's message count grow in
-the management UI). Start a second instance and you'll see both consumers'
-logs interleave on roughly-consecutive sequence numbers — the backlog gets
-processed twice as fast because RabbitMQ is sharing it between them.
+С одним consumer'ом и не самым маленьким `DelayMs` он не успевает за
+producer'ом и начинает отставать (смотрите, как растёт количество сообщений
+в очереди в management UI). Запустите второй экземпляр — и в логах обоих
+consumer'ов пойдут чередующиеся, почти последовательные номера — backlog
+обрабатывается вдвое быстрее, потому что RabbitMQ делит его между ними.
 
-Other useful overrides:
+Другие полезные переопределения:
 
 ```bash
-# simulate slower per-message processing, to make a single consumer fall behind
+# смоделировать более медленную обработку сообщения, чтобы один consumer отставал
 dotnet run -- --Processing:DelayMs=300
 
-# raise prefetch to see blind round-robin instead of load-based dispatch
+# поднять prefetch, чтобы увидеть слепой round-robin вместо распределения по загрузке
 dotnet run -- --Processing:PrefetchCount=50
 
-# point at a different broker (connection settings live under RabbitMq, not Processing)
+# указать другой брокер (настройки подключения находятся в RabbitMq, а не в Processing)
 dotnet run -- --RabbitMq:HostName=my-broker
 ```
 
-## Shutting down
+## Остановка
 
 ```bash
 docker compose down

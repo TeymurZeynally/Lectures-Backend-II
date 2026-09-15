@@ -1,94 +1,99 @@
-# Lecture 04 — Kafka
+# Лекция 04 — Kafka
 
-A minimal Kafka example: one **Producer** that floods a topic with "cat fed"
-events, and a **Consumer** that you run as one or more instances of the same
-service to see how a consumer group shares the work.
+Минимальный пример на Kafka: один **Producer**, который заливает топик
+событиями "кота покормили", и **Consumer**, который можно запускать в
+нескольких экземплярах одного и того же сервиса, чтобы увидеть, как
+consumer group делит между ними работу.
 
-## Concepts shown
+## Концепции
 
-- **Topics & partitions** — the topic `cat-feedings` is auto-created with 6
-  partitions (the broker's `KAFKA_NUM_PARTITIONS` default, set in
-  `docker-compose.yml`).
-- **Keyed ordering** — each message is keyed by `CatId`, so all feedings for
-  the same cat always land on the same partition and stay in order.
-- **Consumer groups & scaling** — every Consumer instance started with the
-  same `GroupId` joins one group. Kafka splits the 6 partitions between
-  however many instances are alive, and rebalances live as you add or stop
-  them. Each instance logs `assigned partitions [...]` when this happens.
-- **Backlog / throughput** — `DelayMs` simulates per-message work.
-  With one consumer it can't keep up with the producer and falls behind
-  (watch the consumer lag grow in Kafka UI); start more consumer instances
-  and the backlog drains faster because the partitions get split between
-  them.
+- **Топики и партиции** — топик `cat-feedings` создаётся автоматически с 6
+  партициями (значение по умолчанию `KAFKA_NUM_PARTITIONS` брокера, задано
+  в `docker-compose.yml`).
+- **Упорядочивание по ключу** — каждое сообщение помечено ключом `CatId`,
+  поэтому все кормления одного и того же кота всегда попадают в одну и ту
+  же партицию и сохраняют порядок.
+- **Consumer group и масштабирование** — каждый экземпляр Consumer,
+  запущенный с одним и тем же `GroupId`, присоединяется к одной группе.
+  Kafka делит 6 партиций между всеми живыми экземплярами и перебалансирует
+  их "на лету" при добавлении или остановке экземпляров. Каждый экземпляр
+  логирует `assigned partitions [...]`, когда это происходит.
+- **Backlog / пропускная способность** — `DelayMs` имитирует обработку
+  каждого сообщения. С одним consumer'ом он не успевает за producer'ом и
+  начинает отставать (смотрите, как растёт consumer lag в Kafka UI);
+  запустите больше экземпляров consumer'а — и backlog разгребается быстрее,
+  потому что партиции делятся между ними.
 
-## 1. Start the broker
+## 1. Запуск брокера
 
 ```bash
 docker compose up -d
 ```
 
-This starts:
-- **Kafka** (KRaft mode, no Zookeeper needed) on `localhost:29092`
-- **Kafka UI** on [http://localhost:8081](http://localhost:8081) — browse
-  topics, partitions, consumer groups and lag from the browser
+Поднимаются:
+- **Kafka** (режим KRaft, без Zookeeper) на `localhost:29092`
+- **Kafka UI** на [http://localhost:8081](http://localhost:8081) — можно
+  смотреть топики, партиции, consumer group и lag прямо в браузере
 
-Everything works out of the box, no manual topic/setup steps required.
+Всё работает из коробки, никакой ручной настройки топиков не требуется.
 
-## 2. Run the Producer
+## 2. Запуск Producer
 
 ```bash
 cd Lecture04.Async.Kafka.Producer
 dotnet run
 ```
 
-Publishes to `cat-feedings` at `MessagesPerSecond` (default 50) forever. The
-topic is auto-created by the broker on first use.
+Публикует в `cat-feedings` со скоростью `MessagesPerSecond` (по умолчанию
+50) без остановки. Топик создаётся брокером автоматически при первом
+использовании.
 
-Override settings via command-line args (they override `appsettings.json`):
+Настройки можно переопределить через аргументы командной строки (они
+переопределяют `appsettings.json`):
 
 ```bash
-# publish much faster, to build up a visible backlog
+# публиковать намного быстрее, чтобы накопить заметный backlog
 dotnet run -- --Processing:MessagesPerSecond=2000
 ```
 
-## 3. Run one or more Consumers
+## 3. Запуск одного или нескольких Consumer
 
-Each terminal below is a separate **consumer instance** in the same
-**consumer group** (`Kafka:GroupId`). Give each one a distinct `ClientId` so
-you can tell them apart in the logs:
+Каждый терминал ниже — отдельный **экземпляр consumer'а** в одной и той же
+**consumer group** (`Kafka:GroupId`). Дайте каждому свой `ClientId`, чтобы
+различать их в логах:
 
 ```bash
 cd Lecture04.Async.Kafka.Consumer
 dotnet run -- --Kafka:ClientId=consumer-1
 ```
 
-Open more terminals for more instances:
+Открывайте больше терминалов для новых экземпляров:
 
 ```bash
 dotnet run -- --Kafka:ClientId=consumer-2
 dotnet run -- --Kafka:ClientId=consumer-3
 ```
 
-Watch the logs: when a new instance joins, you'll see `revoked partitions`
-and `assigned partitions` lines as Kafka rebalances the 6 partitions across
-however many consumers are now running. Stop one (Ctrl+C) and watch its
-partitions get reassigned to the others.
+Смотрите логи: когда подключается новый экземпляр, появляются строки
+`revoked partitions` и `assigned partitions` — Kafka перебалансирует 6
+партиций между всеми запущенными на данный момент consumer'ами. Остановите
+один (Ctrl+C) и посмотрите, как его партиции переназначаются остальным.
 
-Since there are only 6 partitions, more than 6 consumers in the same group
-will sit idle — a good way to show that partition count is the hard limit on
-parallelism within a group.
+Поскольку партиций всего 6, больше 6 consumer'ов в одной группе будут
+простаивать — хорошая демонстрация того, что количество партиций — это
+жёсткий предел параллелизма внутри группы.
 
-Other useful overrides:
+Другие полезные переопределения:
 
 ```bash
-# simulate slower per-message processing, to make a single consumer fall behind
+# смоделировать более медленную обработку сообщения, чтобы один consumer отставал
 dotnet run -- --Processing:DelayMs=300
 
-# start a second, independent group that reads the whole topic on its own
+# запустить вторую, независимую группу, которая сама читает весь топик
 dotnet run -- --Kafka:GroupId=analytics --Kafka:ClientId=analytics-1
 ```
 
-## Shutting down
+## Остановка
 
 ```bash
 docker compose down
