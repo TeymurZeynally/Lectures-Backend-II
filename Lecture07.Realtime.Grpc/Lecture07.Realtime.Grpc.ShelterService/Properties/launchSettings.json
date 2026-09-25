@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "Lecture07.Realtime.Grpc.ShelterService": {
+      "commandName": "Project",
+      "applicationUrl": "http://localhost:5073",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

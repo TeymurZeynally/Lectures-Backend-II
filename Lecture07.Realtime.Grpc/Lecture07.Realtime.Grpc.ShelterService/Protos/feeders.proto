@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+option csharp_namespace = "Lecture07.Realtime.Grpc.ShelterService.Grpc";
+
+package feeders;
+
+service FeedersGrpcService {
+  rpc Connect (stream FeederTelemetry) returns (stream FeederCommand);
+}
+
+message FeederTelemetry {
+  string feeder_id = 1;
+  string cat_name = 2;
+  int64 sequence_number = 3;
+  int32 eaten_grams = 4;
+  int32 food_grams = 5;
+  int32 capacity_grams = 6;
+}
+
+message FeederCommand {
+  int64 sequence_number = 1;
+  int32 grams = 2;
+  string reason = 3;
+}
