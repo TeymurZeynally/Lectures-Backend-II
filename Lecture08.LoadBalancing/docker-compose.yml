@@ -1,0 +1,8 @@
+services:
+  haproxy:
+    image: haproxy:3.4
+    container_name: lecture08-haproxy
+    # Instances run on the host (dotnet run), so HAProxy uses the host network to reach them at 127.0.0.1
+    network_mode: host
+    volumes:
+      - ./haproxy:/usr/local/etc/haproxy:ro

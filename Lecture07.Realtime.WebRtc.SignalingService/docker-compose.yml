@@ -1,0 +1,17 @@
+services:
+  coturn:
+    image: coturn/coturn:latest
+    container_name: lecture07-coturn
+    # TURN hands out relay addresses to the browsers, so it needs the real host network, not a docker bridge
+    network_mode: host
+    command:
+      - -n
+      - --log-file=stdout
+      - --listening-port=3478
+      - --min-port=49160
+      - --max-port=49200
+      - --lt-cred-mech
+      - --user=student:student
+      - --realm=lecture07
+      - --fingerprint
+      - --allow-loopback-peers

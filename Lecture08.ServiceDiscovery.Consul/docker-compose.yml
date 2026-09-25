@@ -1,0 +1,15 @@
+services:
+  consul:
+    image: hashicorp/consul:1.21
+    container_name: lecture08-consul
+    network_mode: host
+    command: ["agent", "-dev", "-bind=127.0.0.1", "-client=127.0.0.1"]
+
+  haproxy:
+    image: haproxy:3.4
+    container_name: lecture08-haproxy
+    network_mode: host
+    depends_on:
+      - consul
+    volumes:
+      - ./haproxy:/usr/local/etc/haproxy:ro

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Передача файлов</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-slate-100 min-h-screen p-8">
+    <div class="max-w-2xl mx-auto">
+        <h1 class="text-3xl font-bold text-slate-800 mb-6">Передача файлов</h1>
+
+        <div class="flex flex-wrap gap-2 mb-4">
+            <input id="room" value="files" class="px-3 py-2 border rounded-lg bg-white">
+            <select id="mode" class="px-3 py-2 border rounded-lg bg-white">
+                <option value="stun">STUN</option>
+                <option value="turn">TURN</option>
+            </select>
+            <button id="join" class="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50">Подключиться</button>
+        </div>
+
+        <p id="status" class="mb-4 font-mono text-sm text-slate-600"></p>
+
+        <div class="bg-white rounded-xl shadow p-5 space-y-4">
+            <div class="flex gap-2">
+                <input id="file" type="file" class="flex-1 text-sm text-slate-600 file:mr-3 file:px-4 file:py-2 file:rounded-lg file:border-0 file:bg-slate-200 file:text-slate-800 file:cursor-pointer hover:file:bg-slate-300">
+                <button id="send" disabled class="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50">Отправить</button>
+            </div>
+
+            <div class="h-3 bg-slate-200 rounded-full overflow-hidden">
+                <div id="progress-bar" class="h-full bg-emerald-500" style="width: 0"></div>
+            </div>
+            <p id="progress-text" class="font-mono text-sm text-slate-600"></p>
+
+            <div id="received" class="space-y-1"></div>
+        </div>
+    </div>
+
+    <script type="module" src="files.js"></script>
+</body>
+</html>

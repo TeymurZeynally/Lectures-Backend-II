@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "Lecture07.Realtime.Sse.FeedingService": {
+      "commandName": "Project",
+      "applicationUrl": "http://localhost:5070",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

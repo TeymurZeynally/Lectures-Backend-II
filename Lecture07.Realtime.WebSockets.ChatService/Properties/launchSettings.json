@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "Lecture07.Realtime.WebSockets.ChatService": {
+      "commandName": "Project",
+      "applicationUrl": "http://localhost:5071",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Кормушки</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-slate-100 min-h-screen p-8">
+    <div class="max-w-4xl mx-auto">
+        <div class="flex items-center justify-between mb-6">
+            <h1 class="text-3xl font-bold text-slate-800">Кормушки</h1>
+            <span id="status" class="px-3 py-1 rounded-full text-sm bg-slate-300 text-slate-700">подключение...</span>
+        </div>
+
+        <div id="feeders" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+    </div>
+
+    <template id="feeder-template">
+        <div class="bg-white rounded-xl shadow p-5">
+            <div class="flex justify-between items-baseline mb-3">
+                <h2 data-name class="text-xl font-semibold text-slate-800"></h2>
+                <span data-grams class="text-slate-500"></span>
+            </div>
+            <div class="h-3 bg-slate-200 rounded-full overflow-hidden mb-3">
+                <div data-bar class="h-full transition-all duration-500"></div>
+            </div>
+            <div class="flex justify-between items-center">
+                <span data-updated class="text-xs text-slate-400"></span>
+                <button data-refill class="px-3 py-1 rounded-lg bg-indigo-600 text-white text-sm hover:bg-indigo-700">Досыпать</button>
+            </div>
+        </div>
+    </template>
+
+    <script src="app.js"></script>
+</body>
+</html>

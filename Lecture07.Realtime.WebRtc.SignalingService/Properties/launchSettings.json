@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "Lecture07.Realtime.WebRtc.SignalingService": {
+      "commandName": "Project",
+      "applicationUrl": "http://localhost:5072",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

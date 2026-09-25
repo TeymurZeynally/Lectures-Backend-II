@@ -1,0 +1,13 @@
+namespace Lecture08.LoadBalancing.CatsService.Options;
+
+public sealed class InstanceOptions
+{
+    public int Number { get; init; } = 1;
+
+    // Simulated work per request. Start one instance with a big value to make it "slow"
+    public int DelayMs { get; init; } = 20;
+
+    public string Name => $"cats-{Number}";
+
+    public int Port => 5100 + Number;
+}

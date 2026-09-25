@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Lecture08.ServiceDiscovery.Consul.CatsService": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

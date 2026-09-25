@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Видеозвонок</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-slate-100 min-h-screen p-8">
+    <div class="max-w-5xl mx-auto">
+        <h1 class="text-3xl font-bold text-slate-800 mb-6">Видеозвонок</h1>
+
+        <div class="flex flex-wrap gap-2 mb-4">
+            <input id="room" value="room 1" class="px-3 py-2 border rounded-lg bg-white">
+            <select id="mode" class="px-3 py-2 border rounded-lg bg-white">
+                <option value="stun">STUN</option>
+                <option value="turn">TURN</option>
+            </select>
+            <select id="source" class="px-3 py-2 border rounded-lg bg-white">
+                <option value="camera">Камера + микрофон</option>
+                <option value="screen">Экран</option>
+            </select>
+            <button id="join" class="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50">Подключиться</button>
+        </div>
+
+        <p id="status" class="mb-4 font-mono text-sm text-slate-600"></p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <video id="local" autoplay playsinline muted class="w-full aspect-video bg-slate-800 rounded-xl"></video>
+            <video id="remote" autoplay playsinline class="w-full aspect-video bg-slate-800 rounded-xl"></video>
+        </div>
+    </div>
+
+    <script type="module" src="call.js"></script>
+</body>
+</html>
