@@ -1,0 +1,132 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: lecture09-airflow-postgres
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    ports:
+      - "5433:5432"
+    volumes:
+      - airflow-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "airflow"]
+      interval: 5s
+      retries: 10
+
+  airflow-init:
+    image: apache/airflow:3.3.2
+    container_name: lecture09-airflow-init
+    command: version
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__AUTH_MANAGER: airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'false'
+      AIRFLOW__CORE__EXECUTION_API_SERVER_URL: http://airflow-apiserver:8080/execution/
+      AIRFLOW__API_AUTH__JWT_SECRET: lecture09-jwt-secret
+      AIRFLOW__API_AUTH__JWT_ISSUER: airflow
+      AIRFLOW__DAG_PROCESSOR__REFRESH_INTERVAL: 10
+      AIRFLOW__SCHEDULER__TASK_INSTANCE_HEARTBEAT_TIMEOUT: 20
+      AIRFLOW__SCHEDULER__SCHEDULER_HEALTH_CHECK_THRESHOLD: 15
+      AIRFLOW__SCHEDULER__ORPHANED_TASKS_CHECK_INTERVAL: 10
+      _AIRFLOW_DB_MIGRATE: 'true'
+      _AIRFLOW_WWW_USER_CREATE: 'true'
+      _AIRFLOW_WWW_USER_USERNAME: airflow
+      _AIRFLOW_WWW_USER_PASSWORD: airflow
+    volumes:
+      - ./dags:/opt/airflow/dags:ro
+      - airflow-logs:/opt/airflow/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  airflow-apiserver:
+    image: apache/airflow:3.3.2
+    container_name: lecture09-airflow-apiserver
+    command: api-server
+    restart: always
+    ports:
+      - "8090:8080"
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__AUTH_MANAGER: airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'false'
+      AIRFLOW__CORE__EXECUTION_API_SERVER_URL: http://airflow-apiserver:8080/execution/
+      AIRFLOW__API_AUTH__JWT_SECRET: lecture09-jwt-secret
+      AIRFLOW__API_AUTH__JWT_ISSUER: airflow
+      AIRFLOW__DAG_PROCESSOR__REFRESH_INTERVAL: 10
+      AIRFLOW__SCHEDULER__TASK_INSTANCE_HEARTBEAT_TIMEOUT: 20
+      AIRFLOW__SCHEDULER__SCHEDULER_HEALTH_CHECK_THRESHOLD: 15
+      AIRFLOW__SCHEDULER__ORPHANED_TASKS_CHECK_INTERVAL: 10
+    volumes:
+      - ./dags:/opt/airflow/dags:ro
+      - airflow-logs:/opt/airflow/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      airflow-init:
+        condition: service_completed_successfully
+
+  airflow-dag-processor:
+    image: apache/airflow:3.3.2
+    container_name: lecture09-airflow-dag-processor
+    command: dag-processor
+    restart: always
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__AUTH_MANAGER: airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'false'
+      AIRFLOW__CORE__EXECUTION_API_SERVER_URL: http://airflow-apiserver:8080/execution/
+      AIRFLOW__API_AUTH__JWT_SECRET: lecture09-jwt-secret
+      AIRFLOW__API_AUTH__JWT_ISSUER: airflow
+      AIRFLOW__DAG_PROCESSOR__REFRESH_INTERVAL: 10
+      AIRFLOW__SCHEDULER__TASK_INSTANCE_HEARTBEAT_TIMEOUT: 20
+      AIRFLOW__SCHEDULER__SCHEDULER_HEALTH_CHECK_THRESHOLD: 15
+      AIRFLOW__SCHEDULER__ORPHANED_TASKS_CHECK_INTERVAL: 10
+    volumes:
+      - ./dags:/opt/airflow/dags:ro
+      - airflow-logs:/opt/airflow/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      airflow-init:
+        condition: service_completed_successfully
+
+  airflow-scheduler:
+    image: apache/airflow:3.3.2
+    command: scheduler
+    restart: always
+    deploy:
+      replicas: 3
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__AUTH_MANAGER: airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'false'
+      AIRFLOW__CORE__EXECUTION_API_SERVER_URL: http://airflow-apiserver:8080/execution/
+      AIRFLOW__API_AUTH__JWT_SECRET: lecture09-jwt-secret
+      AIRFLOW__API_AUTH__JWT_ISSUER: airflow
+      AIRFLOW__DAG_PROCESSOR__REFRESH_INTERVAL: 10
+      AIRFLOW__SCHEDULER__TASK_INSTANCE_HEARTBEAT_TIMEOUT: 20
+      AIRFLOW__SCHEDULER__SCHEDULER_HEALTH_CHECK_THRESHOLD: 15
+      AIRFLOW__SCHEDULER__ORPHANED_TASKS_CHECK_INTERVAL: 10
+    volumes:
+      - ./dags:/opt/airflow/dags:ro
+      - airflow-logs:/opt/airflow/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      airflow-init:
+        condition: service_completed_successfully
+
+volumes:
+  airflow-db:
+  airflow-logs:

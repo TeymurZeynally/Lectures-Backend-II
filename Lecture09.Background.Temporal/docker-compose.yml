@@ -1,0 +1,141 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: lecture09-temporal-postgres
+    environment:
+      POSTGRES_USER: temporal
+      POSTGRES_PASSWORD: temporal
+    ports:
+      - "5434:5432"
+    volumes:
+      - temporal-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "temporal"]
+      interval: 5s
+      retries: 10
+
+  temporal-init:
+    image: temporalio/admin-tools:1.31.3
+    container_name: lecture09-temporal-init
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SQL_PASSWORD: temporal
+      TEMPORAL_ADDRESS: temporal-frontend:7233
+    entrypoint: ["sh", "-c"]
+    command:
+      - |
+        set -e
+        for db in temporal temporal_visibility; do
+          schema=$$([ $$db = temporal ] && echo temporal || echo visibility)
+          temporal-sql-tool --plugin postgres12 --ep postgres -u temporal -p 5432 --db $$db create || true
+          temporal-sql-tool --plugin postgres12 --ep postgres -u temporal -p 5432 --db $$db setup-schema -v 0.0 || true
+          temporal-sql-tool --plugin postgres12 --ep postgres -u temporal -p 5432 --db $$db update-schema -d /etc/temporal/schema/postgresql/v12/$$schema/versioned
+        done
+        touch /tmp/schema-ready
+        until temporal operator cluster health; do sleep 2; done
+        temporal operator namespace describe -n default || temporal operator namespace create -n default
+        sleep 3
+    healthcheck:
+      test: ["CMD", "test", "-f", "/tmp/schema-ready"]
+      interval: 1s
+      retries: 120
+
+  temporal-history:
+    image: temporalio/server:1.31.3
+    container_name: lecture09-temporal-history
+    restart: on-failure
+    environment:
+      DB: postgres12
+      DB_PORT: 5432
+      POSTGRES_SEEDS: postgres
+      POSTGRES_USER: temporal
+      POSTGRES_PWD: temporal
+      TEMPORAL_SERVICES: history
+    configs:
+      - source: temporal-dynamic-config
+        target: /etc/temporal/config/dynamicconfig/docker.yaml
+    depends_on:
+      temporal-init:
+        condition: service_healthy
+
+  temporal-matching:
+    image: temporalio/server:1.31.3
+    container_name: lecture09-temporal-matching
+    restart: on-failure
+    environment:
+      DB: postgres12
+      DB_PORT: 5432
+      POSTGRES_SEEDS: postgres
+      POSTGRES_USER: temporal
+      POSTGRES_PWD: temporal
+      TEMPORAL_SERVICES: matching
+    configs:
+      - source: temporal-dynamic-config
+        target: /etc/temporal/config/dynamicconfig/docker.yaml
+    depends_on:
+      temporal-init:
+        condition: service_healthy
+
+  temporal-frontend:
+    image: temporalio/server:1.31.3
+    container_name: lecture09-temporal-frontend
+    restart: on-failure
+    environment:
+      DB: postgres12
+      DB_PORT: 5432
+      POSTGRES_SEEDS: postgres
+      POSTGRES_USER: temporal
+      POSTGRES_PWD: temporal
+      TEMPORAL_SERVICES: frontend
+    ports:
+      - "7233:7233"
+    configs:
+      - source: temporal-dynamic-config
+        target: /etc/temporal/config/dynamicconfig/docker.yaml
+    depends_on:
+      temporal-init:
+        condition: service_healthy
+
+  temporal-worker:
+    image: temporalio/server:1.31.3
+    container_name: lecture09-temporal-worker
+    restart: on-failure
+    environment:
+      DB: postgres12
+      DB_PORT: 5432
+      POSTGRES_SEEDS: postgres
+      POSTGRES_USER: temporal
+      POSTGRES_PWD: temporal
+      TEMPORAL_SERVICES: worker
+      PUBLIC_FRONTEND_ADDRESS: temporal-frontend:7233
+    configs:
+      - source: temporal-dynamic-config
+        target: /etc/temporal/config/dynamicconfig/docker.yaml
+    depends_on:
+      temporal-init:
+        condition: service_healthy
+
+  temporal-ui:
+    image: temporalio/ui:2.55.0
+    container_name: lecture09-temporal-ui
+    depends_on:
+      - temporal-frontend
+    environment:
+      TEMPORAL_ADDRESS: temporal-frontend:7233
+    ports:
+      - "8233:8080"
+
+volumes:
+  temporal-db:
+
+configs:
+  temporal-dynamic-config:
+    content: |
+      limit.maxIDLength:
+        - value: 255
+          constraints: {}
+      system.forceSearchAttributesCacheRefreshOnRead:
+        - value: true
+          constraints: {}

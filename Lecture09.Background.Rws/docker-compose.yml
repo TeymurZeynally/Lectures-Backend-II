@@ -1,0 +1,45 @@
+services:
+  etcd1:
+    image: quay.io/coreos/etcd:v3.5.17
+    container_name: lecture09-etcd1
+    environment:
+      ETCD_NAME: etcd1
+      ETCD_INITIAL_CLUSTER: etcd1=http://etcd1:2380,etcd2=http://etcd2:2380,etcd3=http://etcd3:2380
+      ETCD_INITIAL_CLUSTER_STATE: new
+      ETCD_INITIAL_CLUSTER_TOKEN: lecture09-rws
+      ETCD_INITIAL_ADVERTISE_PEER_URLS: http://etcd1:2380
+      ETCD_ADVERTISE_CLIENT_URLS: http://etcd1:2379
+      ETCD_LISTEN_PEER_URLS: http://0.0.0.0:2380
+      ETCD_LISTEN_CLIENT_URLS: http://0.0.0.0:2379
+    ports:
+      - "23791:2379"
+
+  etcd2:
+    image: quay.io/coreos/etcd:v3.5.17
+    container_name: lecture09-etcd2
+    environment:
+      ETCD_NAME: etcd2
+      ETCD_INITIAL_CLUSTER: etcd1=http://etcd1:2380,etcd2=http://etcd2:2380,etcd3=http://etcd3:2380
+      ETCD_INITIAL_CLUSTER_STATE: new
+      ETCD_INITIAL_CLUSTER_TOKEN: lecture09-rws
+      ETCD_INITIAL_ADVERTISE_PEER_URLS: http://etcd2:2380
+      ETCD_ADVERTISE_CLIENT_URLS: http://etcd2:2379
+      ETCD_LISTEN_PEER_URLS: http://0.0.0.0:2380
+      ETCD_LISTEN_CLIENT_URLS: http://0.0.0.0:2379
+    ports:
+      - "23792:2379"
+
+  etcd3:
+    image: quay.io/coreos/etcd:v3.5.17
+    container_name: lecture09-etcd3
+    environment:
+      ETCD_NAME: etcd3
+      ETCD_INITIAL_CLUSTER: etcd1=http://etcd1:2380,etcd2=http://etcd2:2380,etcd3=http://etcd3:2380
+      ETCD_INITIAL_CLUSTER_STATE: new
+      ETCD_INITIAL_CLUSTER_TOKEN: lecture09-rws
+      ETCD_INITIAL_ADVERTISE_PEER_URLS: http://etcd3:2380
+      ETCD_ADVERTISE_CLIENT_URLS: http://etcd3:2379
+      ETCD_LISTEN_PEER_URLS: http://0.0.0.0:2380
+      ETCD_LISTEN_CLIENT_URLS: http://0.0.0.0:2379
+    ports:
+      - "23793:2379"

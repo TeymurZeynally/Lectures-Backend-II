@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "Lecture09.Background.Temporal.UploadService": {
+      "commandName": "Project",
+      "applicationUrl": "http://localhost:5082",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}
