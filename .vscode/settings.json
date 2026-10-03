@@ -1,15 +1,7 @@
 {
   "files.exclude": {
     "**/bin": true,
-    "**/obj": true,
-    "**/Lecture01*": true,
-    "**/Lecture02*": true,
-    "**/Lecture03*": true,
-    "**/Lecture04*": true,
-    "**/Lecture07*": true,
-
-    "**/Lecture08.LoadBalancing*": false,
-    "**/Lecture08.ServiceDiscovery.Consul*": false,
+    "**/obj": true
   },
   "files.associations": {
     "**/haproxy/*.cfg": "haproxy"
