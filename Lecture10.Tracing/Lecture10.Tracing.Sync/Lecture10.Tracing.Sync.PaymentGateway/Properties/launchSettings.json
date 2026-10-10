@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "Lecture10.Tracing.Sync.PaymentGateway": {
+      "commandName": "Project",
+      "applicationUrl": "http://localhost:5113",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

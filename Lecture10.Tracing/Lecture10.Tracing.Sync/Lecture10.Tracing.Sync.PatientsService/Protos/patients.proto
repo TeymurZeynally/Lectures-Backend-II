@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+option csharp_namespace = "Clinic.Grpc";
+
+package clinic;
+
+service PatientsService {
+  rpc GetMedicalCard (GetMedicalCardRequest) returns (MedicalCard);
+}
+
+message GetMedicalCardRequest {
+  string patient_id = 1;
+}
+
+message MedicalCard {
+  string patient_id = 1;
+  string name = 2;
+  string species = 3;
+  string owner = 4;
+}

@@ -1,0 +1,15 @@
+{
+  "profiles": {
+    "Lecture10.Tracing.SimpleApp": {
+      "commandName": "Project",
+      "applicationUrl": "http://localhost:5100",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4318",
+        "OTEL_EXPORTER_OTLP_PROTOCOL": "http/protobuf",
+        "OTEL_METRIC_EXPORT_INTERVAL": "1000",
+        "OTEL_BSP_SCHEDULE_DELAY": "1000"
+      }
+    }
+  }
+}

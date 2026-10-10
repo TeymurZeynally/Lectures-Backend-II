@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+option csharp_namespace = "Clinic.Grpc";
+
+package clinic;
+
+service ScheduleService {
+  rpc ReserveSlot (ReserveSlotRequest) returns (ReserveSlotResponse);
+}
+
+message ReserveSlotRequest {
+  string doctor_id = 1;
+  string starts_at = 2;
+}
+
+message ReserveSlotResponse {
+  string slot_id = 1;
+}
